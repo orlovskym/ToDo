@@ -68,6 +68,7 @@ const createProject = (name) => {
     }
 
     (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('createToDo', addToDo)
+    ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('deleteTile', removeToDoByIndex)
 
     return { name, addToDo, getToDoByIndex, getAllToDos, removeToDoByIndex, }
 }
@@ -131,6 +132,27 @@ function drawTile(toDo) {
     const titleBar = document.createElement('div')
     titleBar.innerText = toDo.title;
     titleBar.classList.add('tileTop')
+
+    const buttons=document.createElement('div')
+    buttons.classList.add('tileButtons')
+    const editButton = document.createElement('img')
+    editButton.src='./images/book.svg';    
+    const closeButton = document.createElement('img')
+    closeButton.src='./images/close.svg';
+
+
+    editButton.addEventListener('click',e=>{
+        console.log(whatsMyIndex(e))
+    })
+
+    closeButton.addEventListener('click',e=>{
+        ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('deleteTile',whatsMyIndex(e))
+    })
+
+    titleBar.append(buttons);
+    buttons.append(editButton, closeButton);
+
+
     const descBar = document.createElement('div')
     descBar.innerText = toDo.description;
     const dueBar = document.createElement('div')
@@ -141,6 +163,12 @@ function drawTile(toDo) {
     container.append(titleBar, descBar, dueBar, prioBar)
     display.append(container)
     //publish('drewTile', container)
+}
+
+function whatsMyIndex(e){
+    //returns the index corresponding to the tile in which a button was clicked
+    let thisTile=(e.target.parentNode.parentNode.parentNode)
+    return(Array.from(thisTile.parentNode.children).indexOf(thisTile))
 }
 
 function drawTiles(array) {
@@ -204,7 +232,8 @@ function drawNewTileInterface() {
         let whichButton = undefined
         if (highPButton.checked) whichButton="High"
         if (lowPButton.checked) whichButton="Low"
-        ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('createToDo', { title: nameInput.value, description: descBox.value, dueDate: dueInput.value, priority: whichButton, completed: false })
+        if (!nameInput.value) return;
+        (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('createToDo', { title: nameInput.value, description: descBox.value, dueDate: dueInput.value, priority: whichButton, completed: false })
 
     })
 

@@ -55,6 +55,7 @@ const createProject = (name) => {
     }
 
     subscribe('createToDo', addToDo)
+    subscribe('deleteTile', removeToDoByIndex)
 
     return { name, addToDo, getToDoByIndex, getAllToDos, removeToDoByIndex, }
 }

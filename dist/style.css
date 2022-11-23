@@ -44,8 +44,19 @@ gap: 5vh;
 
 .tileTop{
     background-color: red;
+    display: flex;
+    justify-content: space-between;
 }
 
+.tileButtons{
+    display: flex;
+    gap: 4px;
+}
+
+.tileButtons img{
+    height: 1em;
+    width: 1em;
+}
 
 /*
 html5doctor.com Reset Stylesheet
