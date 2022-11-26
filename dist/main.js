@@ -2,81 +2,7 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ([
 /* 0 */,
-/* 1 */
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "createProject": () => (/* binding */ createProject),
-/* harmony export */   "createToDo": () => (/* binding */ createToDo)
-/* harmony export */ });
-/* harmony import */ var _pubsub__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2);
-
-
-const activeProjectTracker = (() => {
-    let _activeProject = null;
-
-    function setActiveProject(name) {
-        _activeProject = name;
-    }
-
-    function getActiveProject() {
-        return (_activeProject)
-    }
-
-    return { setActiveProject, getActiveProject }
-})();
-
-
-const createToDo = (title, description, dueDate, priority, completed) => {
-
-    function toggleCompletion() {
-        this.completed = !this.completed;
-    }
-
-    (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('createToDo', { title, description, dueDate, priority, completed, toggleCompletion })
-}
-
-
-const createProject = (name) => {
-    let _toDos = [];
-    activeProjectTracker.setActiveProject(name);
-    console.log('created project ' + name)
-
-    function addToDo(toDo) {
-        if (activeProjectTracker.getActiveProject() == name) {
-            _toDos.push(toDo);
-            _notifyUpdatedToDos();
-        }
-    }
-
-    function getToDoByIndex(i) {
-            return _toDos[i];
-    }
-
-    function removeToDoByIndex(i) {
-            _toDos.splice(i, 1);
-            _notifyUpdatedToDos();
-    }
-
-    function getAllToDos() {
-        return _toDos;
-    }
-
-    function _notifyUpdatedToDos(){
-        (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish) ('updatedToDos', _toDos)
-    }
-
-    (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('createToDo', addToDo)
-    ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('deleteTile', removeToDoByIndex)
-
-    return { name, addToDo, getToDoByIndex, getAllToDos, removeToDoByIndex, }
-}
-
-
-
-
-/***/ }),
+/* 1 */,
 /* 2 */
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -85,7 +11,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "publish": () => (/* binding */ publish),
 /* harmony export */   "subscribe": () => (/* binding */ subscribe)
 /* harmony export */ });
-let devMode = true;
+let devMode = false;
 let events = [];
 let funktions = [];
 
@@ -114,17 +40,24 @@ function publish(eventName, data) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "drawTile": () => (/* binding */ drawTile)
+/* harmony export */   "initialize": () => (/* binding */ initialize)
 /* harmony export */ });
 /* harmony import */ var _pubsub__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2);
 
 
 (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('updatedToDos',drawTiles)
 
+const initialize = (()=>{
+    console.log('it lives');
 
-newToDo.addEventListener('click', () => {
-    drawNewTileInterface();
-})
+    newToDo.addEventListener('click', () => {
+        _drawTileModInterface();
+        _drawNewTileButton();
+    })
+
+})();
+
+
 
 function drawTile(toDo) {
     const container = document.createElement('div')
@@ -142,8 +75,9 @@ function drawTile(toDo) {
 
 
     editButton.addEventListener('click',e=>{
-        console.log(whatsMyIndex(e))
-    })
+        _drawTileModInterface();
+        _drawEditTileButton(whatsMyIndex(e));
+        })
 
     closeButton.addEventListener('click',e=>{
         ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('deleteTile',whatsMyIndex(e))
@@ -162,7 +96,6 @@ function drawTile(toDo) {
 
     container.append(titleBar, descBar, dueBar, prioBar)
     display.append(container)
-    //publish('drewTile', container)
 }
 
 function whatsMyIndex(e){
@@ -178,9 +111,10 @@ function drawTiles(array) {
     }
 }
 
-function drawNewTileInterface() {
+function _drawTileModInterface() {
     _clearControls();
     const container = document.createElement('form')
+    container.id='container'
     const nameRow = document.createElement('div')
     nameRow.classList.add('formRow')
     const nameLabel = document.createElement('label')
@@ -188,13 +122,14 @@ function drawNewTileInterface() {
     nameLabel.innerText = 'Name: '
     const nameInput = document.createElement('input')
     nameInput.type = 'text';
+    nameInput.id='nameInput'
     nameRow.append(nameLabel, nameInput)
 
-    //const descRow = document.createElement('div')
     const descLabel = document.createElement('label')
     descLabel.htmlFor = ('desc');
     descLabel.innerText = 'Description: '
     const descBox = document.createElement('textarea')
+    descBox.id='descBox'
 
     const dueRow = document.createElement('div')
     const dueLabel = document.createElement('label')
@@ -202,8 +137,8 @@ function drawNewTileInterface() {
     dueLabel.innerText = 'Due Date: '
     const dueInput = document.createElement('input')
     dueInput.type = 'date';
+    dueInput.id='dueInput'
     dueRow.append(dueLabel, dueInput)
-
 
     const prioRow = document.createElement('div')
     prioRow.innerText = 'Priority: '
@@ -214,32 +149,52 @@ function drawNewTileInterface() {
     const highPButton = document.createElement('input')
     highPButton.type = 'radio'
     highPButton.name = 'prio'
+    highPButton.id='highPButton'
     const lowPLabel = document.createElement('div')
     lowPLabel.innerText = 'Low'
     const lowPButton = document.createElement('input')
     lowPButton.type = 'radio'
     lowPButton.name = 'prio'
+    lowPButton.id='lowPButton'
     prioButtons.append(highPLabel, highPButton, lowPLabel, lowPButton)
 
+    container.append(nameRow, descLabel, descBox, dueRow, prioRow, prioButtons)
+    tempControls.append(container)
+}
+function _whichPriorityIsChecked(){
+    if (!highPButton.checked&&!lowPButton.checked) return null;
+    if (highPButton.checked) return 'High';
+    if (lowPButton.checked) return 'Low';}
 
-    //move this to its own function so different button can be created instead (for edit ToDo)
+
+function _validateTileInput(){
+    if (!nameInput.value || !descBox.value || !dueInput.value || !_whichPriorityIsChecked()) {
+        alert('All fields require an entry.')
+        return 0;
+    }else return 1;
+}
+
+function _drawNewTileButton(){
     const subButton = document.createElement('button')
     subButton.innerText = 'Submit'
-    //event not working
     subButton.addEventListener('click', (e) => {
         e.preventDefault();
-
-        let whichButton = undefined
-        if (highPButton.checked) whichButton="High"
-        if (lowPButton.checked) whichButton="Low"
-        if (!nameInput.value) return;
-        (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('createToDo', { title: nameInput.value, description: descBox.value, dueDate: dueInput.value, priority: whichButton, completed: false })
-
+        if (!_validateTileInput()) return;
+        (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('createToDo', { title: nameInput.value, description: descBox.value, dueDate: dueInput.value, priority: _whichPriorityIsChecked(), completed: false })
     })
+    container.append(subButton)
+}
 
+function _drawEditTileButton(i){
+    const editButton = document.createElement('button')
+    editButton.innerText = 'Submit'
+    editButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!_validateTileInput()) return;
 
-    container.append(nameRow, descLabel, descBox, dueRow, prioRow, prioButtons, subButton)
-    tempControls.append(container)
+        (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('editToDo',{ title: nameInput.value, description: descBox.value, dueDate: dueInput.value, priority: _whichPriorityIsChecked(), completed: false, index:i })
+    })
+    container.append(editButton)
 }
 
 function _clearControls() {
@@ -313,18 +268,85 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _toDo__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
+/* harmony import */ var _pubsub__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2);
 /* harmony import */ var _toDoDOM__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3);
-/* harmony import */ var _pubsub__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(2);
 
 
 
 
+const projectFactory = (name) => {
+    console.log('i am a new project, my name is ' + name)
+    let _toDos = [];
+
+    function toDoFactory ({title, description, dueDate, priority, completed}) {
+        console.log('making a todo named ' + title)
+        function toggleCompletion() {
+            this.completed = !this.completed;
+        }
+        let toDo = { title, description, dueDate, priority, completed, toggleCompletion }
+        _toDos.push(toDo);
+        _notifyUpdatedToDos();
+    }
+
+    function editToDo({title, description, dueDate, priority, completed, index}) {
+        let i = _toDos[index];
+        i.title=title;
+        i.description=description;
+        i.dueDate=dueDate;
+        i.priority=priority;
+        i.completed=completed;
+        _notifyUpdatedToDos();
+    }
+
+    function getToDoByIndex(i) {
+        return _toDos[i];
+    }
+
+    function removeToDoByIndex(i) {
+        _toDos.splice(i, 1);
+        _notifyUpdatedToDos();
+    }
+
+    function getAllToDos() {
+        return _toDos;
+    }
+
+    function _notifyUpdatedToDos() {
+        (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('updatedToDos', _toDos)
+    }
+
+    return {name, toDoFactory, editToDo};
+}
 
 
-(0,_toDo__WEBPACK_IMPORTED_MODULE_0__.createProject)('Default')
-//createProject('Default2')
-;(0,_toDo__WEBPACK_IMPORTED_MODULE_0__.createToDo)(1,2,3,4,5)
+const projectManager = (() => {
+    let projects = [];
+    let activeProject = undefined;
+
+    const createProject = (name) => {
+        projects.push(projectFactory(name));
+        activeProject=projects[projects.length-1]
+    }
+
+    const renameProject = (name,index) =>{
+        projects[index].name=name;
+    }
+
+
+    //initialize subscriptions and the default project
+    ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('createProject',createProject);
+    (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('createProject','default')
+    ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('createToDo',activeProject.toDoFactory)
+    ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('editToDo',activeProject.editToDo)
+
+    //testing content below
+  /*  publish('createToDo',{title:1,description:2,dueDate:3,priority:4,completed:5})
+    publish('editToDo',({title:2,description:2,dueDate:3,priority:4,completed:5, index:0}))
+    console.log(projects)*/
+
+})();
+
+
 })();
 
 /******/ })()
