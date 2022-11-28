@@ -8,14 +8,34 @@ width: 30vw;
 background-color: blue;
 display: flex;
 flex-direction: column;
+align-items: center;
+padding-top: 10px;
+gap: 6px;
 }
 
-#tempControls{
+#controls button{
+    width: 20vw;
+    padding: 4px;
+}
+
+#tempControls, #projectsList{
     background-color: green;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+    border-radius: 5px;
+    width: 20vw;
+}
+
+#inputLabel{
+    font-weight: bold;
 }
 
 .formRow{
     display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 #controls textarea{
@@ -33,12 +53,14 @@ gap: 5vh;
 }
 
 .tile{
-    background-color: aqua;
+    background-color: whitesmoke;
     height: 20vh;
     width: 20vh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    border-radius: 10px;
+    padding: 5px;
 
 }
 

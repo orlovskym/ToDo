@@ -13,7 +13,7 @@ const projectFactory = (name) => {
         }
         let toDo = { title, description, dueDate, priority, completed, toggleCompletion }
         _toDos.push(toDo);
-        _notifyUpdatedToDos();
+        notifyUpdatedToDos();
     }
 
     function editToDo({title, description, dueDate, priority, completed, index}) {
@@ -23,7 +23,7 @@ const projectFactory = (name) => {
         i.dueDate=dueDate;
         i.priority=priority;
         i.completed=completed;
-        _notifyUpdatedToDos();
+        notifyUpdatedToDos();
     }
 
     function getToDoByIndex(i) {
@@ -32,18 +32,18 @@ const projectFactory = (name) => {
 
     function removeToDoByIndex(i) {
         _toDos.splice(i, 1);
-        _notifyUpdatedToDos();
+        notifyUpdatedToDos();
     }
 
     function getAllToDos() {
         return _toDos;
     }
 
-    function _notifyUpdatedToDos() {
+    function notifyUpdatedToDos() {
         publish('updatedToDos', _toDos)
     }
 
-    return {name, toDoFactory, editToDo};
+    return {name, toDoFactory, editToDo, removeToDoByIndex, notifyUpdatedToDos};
 }
 
 
@@ -54,23 +54,50 @@ const projectManager = (() => {
     const createProject = (name) => {
         projects.push(projectFactory(name));
         activeProject=projects[projects.length-1]
+        _notifyUpdatedProjects();
     }
 
     const renameProject = (name,index) =>{
         projects[index].name=name;
+        _notifyUpdatedProjects();
+    }
+
+    function _notifyUpdatedProjects() {
+        publish('updatedProjects', projects);
+        activeProject.notifyUpdatedToDos();
+    }
+
+    function setActiveProject(i){
+        activeProject=projects[i-1];
+        console.log(activeProject.name + ' is now active')
+        _notifyUpdatedProjects();
+    }
+
+    function newToDo(toDo){
+        activeProject.toDoFactory(toDo);
+    }
+
+    function editToDo(toDo){
+        activeProject.editToDo(toDo);
+    }
+
+    function removeToDo(index){
+        activeProject.removeToDoByIndex(index);
     }
 
 
     //initialize subscriptions and the default project
+    //the problem is passing activeProject when subscribing, but not changing it later
     subscribe('createProject',createProject);
     publish('createProject','default')
-    subscribe('createToDo',activeProject.toDoFactory)
-    subscribe('editToDo',activeProject.editToDo)
+    subscribe('createToDo',newToDo)
+    subscribe('editToDo',editToDo)
+    subscribe('deleteToDo',removeToDo)
+    subscribe('changeActiveProject', setActiveProject);
 
     //testing content below
-  /*  publish('createToDo',{title:1,description:2,dueDate:3,priority:4,completed:5})
+   publish('createToDo',{title:1,description:2,dueDate:3,priority:4,completed:5})
     publish('editToDo',({title:2,description:2,dueDate:3,priority:4,completed:5, index:0}))
-    console.log(projects)*/
 
 })();
 

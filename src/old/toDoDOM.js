@@ -1,75 +1,12 @@
 import { subscribe, publish } from './pubsub'
 
 subscribe('updatedToDos',drawTiles)
-subscribe('updatedProjects',drawProjects)
 
-const initialize = (()=>{
-    newToDo.addEventListener('click', () => {
-        _drawInputInterface();
-        _drawNewTileButton();
-    })
 
-    newProject.addEventListener('click', () =>{
-        drawProjectInterface();
-    })
-
-})();
-
-function drawProjectInterface(){
-   _clearProjects();
-    const projectLabel = document.createElement('div');
-    projectLabel.id='inputLabel'
-    projectLabel.innerText="Create Project Interface";
-
-    const projectRow = document.createElement('div')
-    projectRow.classList.add('formRow')
-    const projectNameLabel = document.createElement('label')
-    projectNameLabel.htmlFor = ('project');
-    projectNameLabel.innerText = 'Project Name: '
-    const projectInput = document.createElement('input')
-    projectInput.type = 'text';
-    projectInput.id='projectInput'
-    projectRow.append(projectNameLabel, projectInput)
-    projectsList.append(projectRow)
-
-    const subButton = document.createElement('button')
-    subButton.innerText = 'Submit'
-    subButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        publish('createProject', projectInput.value)
-    })
-    projectsList.append(subButton)
-}
-
-function _clearProjects(){
-    projectsList.replaceChildren();
-}
-
-function drawProjects(projectArray){
-    _clearProjects();
-    const projectLabel = document.createElement('div');
-    projectLabel.id='inputLabel'
-    projectLabel.innerText="Projects:";
-    projectsList.append(projectLabel);
-    for (let i=0;i<projectArray.length;i++){
-        drawProjectLine(projectArray[i]);
-    }
-
-}
-
-function drawProjectLine(project){
-    const projectLine = document.createElement('div');
-    projectLine.innerText=project.name;
-    projectsList.append(projectLine);
-    projectLine.addEventListener('click',e=>{
-        publish('changeActiveProject',whichProjectAmI(e))
-    })
-}
-
-function whichProjectAmI(e){
-    let thisProject=(e.target)
-    return(Array.from(thisProject.parentNode.children).indexOf(thisProject))
-}
+newToDo.addEventListener('click', () => {
+    _drawTileModInterface();
+    _drawNewTileButton();
+})
 
 function drawTile(toDo) {
     const container = document.createElement('div')
@@ -87,12 +24,12 @@ function drawTile(toDo) {
 
 
     editButton.addEventListener('click',e=>{
-        _drawInputInterface();
+        _drawTileModInterface();
         _drawEditTileButton(whatsMyIndex(e));
         })
 
     closeButton.addEventListener('click',e=>{
-        publish('deleteToDo',whatsMyIndex(e))
+        publish('deleteTile',whatsMyIndex(e))
     })
 
     titleBar.append(buttons);
@@ -123,12 +60,10 @@ function drawTiles(array) {
     }
 }
 
-function _drawInputInterface() {
+function _drawTileModInterface() {
     _clearControls();
     const container = document.createElement('form')
     container.id='container'
-    const inputLabel = document.createElement('div');
-    inputLabel.id='inputLabel';
     const nameRow = document.createElement('div')
     nameRow.classList.add('formRow')
     const nameLabel = document.createElement('label')
@@ -146,7 +81,6 @@ function _drawInputInterface() {
     descBox.id='descBox'
 
     const dueRow = document.createElement('div')
-    dueRow.classList.add('formRow')
     const dueLabel = document.createElement('label')
     dueLabel.htmlFor = ('due');
     dueLabel.innerText = 'Due Date: '
@@ -156,9 +90,7 @@ function _drawInputInterface() {
     dueRow.append(dueLabel, dueInput)
 
     const prioRow = document.createElement('div')
-    prioRow.classList.add('formRow')
-    const prioLabel = document.createElement('div')
-    prioLabel.innerText = 'Priority: '
+    prioRow.innerText = 'Priority: '
     const prioButtons = document.createElement('div')
     prioButtons.classList.add('formRow')
     const highPLabel = document.createElement('div')
@@ -174,9 +106,8 @@ function _drawInputInterface() {
     lowPButton.name = 'prio'
     lowPButton.id='lowPButton'
     prioButtons.append(highPLabel, highPButton, lowPLabel, lowPButton)
-    prioRow.append(prioLabel, prioButtons)
 
-    container.append(inputLabel, nameRow, descLabel, descBox, dueRow, prioRow)
+    container.append(nameRow, descLabel, descBox, dueRow, prioRow, prioButtons)
     tempControls.append(container)
 }
 function _whichPriorityIsChecked(){
@@ -193,7 +124,6 @@ function _validateTileInput(){
 }
 
 function _drawNewTileButton(){
-    inputLabel.innerText='New Tile Interface';
     const subButton = document.createElement('button')
     subButton.innerText = 'Submit'
     subButton.addEventListener('click', (e) => {
@@ -201,20 +131,19 @@ function _drawNewTileButton(){
         if (!_validateTileInput()) return;
         publish('createToDo', { title: nameInput.value, description: descBox.value, dueDate: dueInput.value, priority: _whichPriorityIsChecked(), completed: false })
     })
-    tempControls.append(subButton)
+    container.append(subButton)
 }
 
 function _drawEditTileButton(i){
-    inputLabel.innerText='Edit Tile Interface';
     const editButton = document.createElement('button')
     editButton.innerText = 'Submit'
     editButton.addEventListener('click', (e) => {
         e.preventDefault();
         if (!_validateTileInput()) return;
 
-        publish('editToDo',{ title: nameInput.value, description: descBox.value, dueDate: dueInput.value, priority: _whichPriorityIsChecked(), completed: false, index:i })
+        publish('editToDo',{ title: nameInput.value, description: descBox.value, dueDate: dueInput.value, priority: _whichPriorityIsChecked(), completed: false, which:i })
     })
-    tempControls.append(editButton)
+    container.append(editButton)
 }
 
 function _clearControls() {
@@ -225,4 +154,4 @@ function _clearDisplay(){
     display.replaceChildren();
 }
 
-export {initialize}
+export { drawTile }

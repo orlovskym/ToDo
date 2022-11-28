@@ -1,4 +1,4 @@
-let devMode = true;
+let devMode = false;
 let events = [];
 let funktions = [];
 
@@ -19,4 +19,4 @@ function publish(eventName, data) {
        }
 }
 
-export { subscribe, publish }
+export { subscribe, publish, }

@@ -46,18 +46,75 @@ __webpack_require__.r(__webpack_exports__);
 
 
 (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('updatedToDos',drawTiles)
+;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('updatedProjects',drawProjects)
 
 const initialize = (()=>{
-    console.log('it lives');
-
     newToDo.addEventListener('click', () => {
-        _drawTileModInterface();
+        _drawInputInterface();
         _drawNewTileButton();
+    })
+
+    newProject.addEventListener('click', () =>{
+        drawProjectInterface();
     })
 
 })();
 
+function drawProjectInterface(){
+   _clearProjects();
+    const projectLabel = document.createElement('div');
+    projectLabel.id='inputLabel'
+    projectLabel.innerText="Create Project Interface";
 
+    const projectRow = document.createElement('div')
+    projectRow.classList.add('formRow')
+    const projectNameLabel = document.createElement('label')
+    projectNameLabel.htmlFor = ('project');
+    projectNameLabel.innerText = 'Project Name: '
+    const projectInput = document.createElement('input')
+    projectInput.type = 'text';
+    projectInput.id='projectInput'
+    projectRow.append(projectNameLabel, projectInput)
+    projectsList.append(projectRow)
+
+    const subButton = document.createElement('button')
+    subButton.innerText = 'Submit'
+    subButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('createProject', projectInput.value)
+    })
+    projectsList.append(subButton)
+}
+
+function _clearProjects(){
+    projectsList.replaceChildren();
+}
+
+function drawProjects(projectArray){
+    _clearProjects();
+    const projectLabel = document.createElement('div');
+    projectLabel.id='inputLabel'
+    projectLabel.innerText="Projects:";
+    projectsList.append(projectLabel);
+    for (let i=0;i<projectArray.length;i++){
+        drawProjectLine(projectArray[i]);
+    }
+
+}
+
+function drawProjectLine(project){
+    const projectLine = document.createElement('div');
+    projectLine.innerText=project.name;
+    projectsList.append(projectLine);
+    projectLine.addEventListener('click',e=>{
+        (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('changeActiveProject',whichProjectAmI(e))
+    })
+}
+
+function whichProjectAmI(e){
+    let thisProject=(e.target)
+    return(Array.from(thisProject.parentNode.children).indexOf(thisProject))
+}
 
 function drawTile(toDo) {
     const container = document.createElement('div')
@@ -75,12 +132,12 @@ function drawTile(toDo) {
 
 
     editButton.addEventListener('click',e=>{
-        _drawTileModInterface();
+        _drawInputInterface();
         _drawEditTileButton(whatsMyIndex(e));
         })
 
     closeButton.addEventListener('click',e=>{
-        ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('deleteTile',whatsMyIndex(e))
+        ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('deleteToDo',whatsMyIndex(e))
     })
 
     titleBar.append(buttons);
@@ -111,10 +168,12 @@ function drawTiles(array) {
     }
 }
 
-function _drawTileModInterface() {
+function _drawInputInterface() {
     _clearControls();
     const container = document.createElement('form')
     container.id='container'
+    const inputLabel = document.createElement('div');
+    inputLabel.id='inputLabel';
     const nameRow = document.createElement('div')
     nameRow.classList.add('formRow')
     const nameLabel = document.createElement('label')
@@ -132,6 +191,7 @@ function _drawTileModInterface() {
     descBox.id='descBox'
 
     const dueRow = document.createElement('div')
+    dueRow.classList.add('formRow')
     const dueLabel = document.createElement('label')
     dueLabel.htmlFor = ('due');
     dueLabel.innerText = 'Due Date: '
@@ -141,7 +201,9 @@ function _drawTileModInterface() {
     dueRow.append(dueLabel, dueInput)
 
     const prioRow = document.createElement('div')
-    prioRow.innerText = 'Priority: '
+    prioRow.classList.add('formRow')
+    const prioLabel = document.createElement('div')
+    prioLabel.innerText = 'Priority: '
     const prioButtons = document.createElement('div')
     prioButtons.classList.add('formRow')
     const highPLabel = document.createElement('div')
@@ -157,8 +219,9 @@ function _drawTileModInterface() {
     lowPButton.name = 'prio'
     lowPButton.id='lowPButton'
     prioButtons.append(highPLabel, highPButton, lowPLabel, lowPButton)
+    prioRow.append(prioLabel, prioButtons)
 
-    container.append(nameRow, descLabel, descBox, dueRow, prioRow, prioButtons)
+    container.append(inputLabel, nameRow, descLabel, descBox, dueRow, prioRow)
     tempControls.append(container)
 }
 function _whichPriorityIsChecked(){
@@ -175,6 +238,7 @@ function _validateTileInput(){
 }
 
 function _drawNewTileButton(){
+    inputLabel.innerText='New Tile Interface';
     const subButton = document.createElement('button')
     subButton.innerText = 'Submit'
     subButton.addEventListener('click', (e) => {
@@ -182,10 +246,11 @@ function _drawNewTileButton(){
         if (!_validateTileInput()) return;
         (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('createToDo', { title: nameInput.value, description: descBox.value, dueDate: dueInput.value, priority: _whichPriorityIsChecked(), completed: false })
     })
-    container.append(subButton)
+    tempControls.append(subButton)
 }
 
 function _drawEditTileButton(i){
+    inputLabel.innerText='Edit Tile Interface';
     const editButton = document.createElement('button')
     editButton.innerText = 'Submit'
     editButton.addEventListener('click', (e) => {
@@ -194,7 +259,7 @@ function _drawEditTileButton(i){
 
         (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('editToDo',{ title: nameInput.value, description: descBox.value, dueDate: dueInput.value, priority: _whichPriorityIsChecked(), completed: false, index:i })
     })
-    container.append(editButton)
+    tempControls.append(editButton)
 }
 
 function _clearControls() {
@@ -285,7 +350,7 @@ const projectFactory = (name) => {
         }
         let toDo = { title, description, dueDate, priority, completed, toggleCompletion }
         _toDos.push(toDo);
-        _notifyUpdatedToDos();
+        notifyUpdatedToDos();
     }
 
     function editToDo({title, description, dueDate, priority, completed, index}) {
@@ -295,7 +360,7 @@ const projectFactory = (name) => {
         i.dueDate=dueDate;
         i.priority=priority;
         i.completed=completed;
-        _notifyUpdatedToDos();
+        notifyUpdatedToDos();
     }
 
     function getToDoByIndex(i) {
@@ -304,18 +369,18 @@ const projectFactory = (name) => {
 
     function removeToDoByIndex(i) {
         _toDos.splice(i, 1);
-        _notifyUpdatedToDos();
+        notifyUpdatedToDos();
     }
 
     function getAllToDos() {
         return _toDos;
     }
 
-    function _notifyUpdatedToDos() {
+    function notifyUpdatedToDos() {
         (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('updatedToDos', _toDos)
     }
 
-    return {name, toDoFactory, editToDo};
+    return {name, toDoFactory, editToDo, removeToDoByIndex, notifyUpdatedToDos};
 }
 
 
@@ -326,23 +391,50 @@ const projectManager = (() => {
     const createProject = (name) => {
         projects.push(projectFactory(name));
         activeProject=projects[projects.length-1]
+        _notifyUpdatedProjects();
     }
 
     const renameProject = (name,index) =>{
         projects[index].name=name;
+        _notifyUpdatedProjects();
+    }
+
+    function _notifyUpdatedProjects() {
+        ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('updatedProjects', projects);
+        activeProject.notifyUpdatedToDos();
+    }
+
+    function setActiveProject(i){
+        activeProject=projects[i-1];
+        console.log(activeProject.name + ' is now active')
+        _notifyUpdatedProjects();
+    }
+
+    function newToDo(toDo){
+        activeProject.toDoFactory(toDo);
+    }
+
+    function editToDo(toDo){
+        activeProject.editToDo(toDo);
+    }
+
+    function removeToDo(index){
+        activeProject.removeToDoByIndex(index);
     }
 
 
     //initialize subscriptions and the default project
-    ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('createProject',createProject);
+    //the problem is passing activeProject when subscribing, but not changing it later
+    (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('createProject',createProject);
     (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('createProject','default')
-    ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('createToDo',activeProject.toDoFactory)
-    ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('editToDo',activeProject.editToDo)
+    ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('createToDo',newToDo)
+    ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('editToDo',editToDo)
+    ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('deleteToDo',removeToDo)
+    ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.subscribe)('changeActiveProject', setActiveProject);
 
     //testing content below
-  /*  publish('createToDo',{title:1,description:2,dueDate:3,priority:4,completed:5})
-    publish('editToDo',({title:2,description:2,dueDate:3,priority:4,completed:5, index:0}))
-    console.log(projects)*/
+   (0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('createToDo',{title:1,description:2,dueDate:3,priority:4,completed:5})
+    ;(0,_pubsub__WEBPACK_IMPORTED_MODULE_0__.publish)('editToDo',({title:2,description:2,dueDate:3,priority:4,completed:5, index:0}))
 
 })();
 
